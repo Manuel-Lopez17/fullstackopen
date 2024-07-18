@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import personsService from "./services/persons";
+import "./index.css";
 
 const Filter = (props) => {
   return (
@@ -38,7 +39,7 @@ const Form = (props) => {
 };
 
 const Persons = (props) => {
-  return props.filteredPeople.map((person) => (
+  return props.filteredPersons.map((person) => (
     <div key={person.id}>
       {person.name} {person.number}{" "}
       <button data-person={JSON.stringify(person)} onClick={props.handleDelete}>
@@ -46,6 +47,22 @@ const Persons = (props) => {
       </button>
     </div>
   ));
+};
+
+const Notification = ({ message, type }) => {
+  if (message === null) {
+    return null;
+  }
+
+  return (
+    <div
+      className={`notification ${
+        type === "success" ? "notification-success" : "notification-error"
+      }`}
+    >
+      {message}
+    </div>
+  );
 };
 
 const App = () => {
@@ -63,6 +80,10 @@ const App = () => {
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [search, setSearch] = useState("");
+  const [notification, setNotification] = useState({
+    message: null,
+    type: "success",
+  });
 
   const addPerson = (event) => {
     event.preventDefault();
@@ -79,6 +100,16 @@ const App = () => {
         id: newId.toString(),
       };
       const promise = personsService.create(newPerson).then((response) => {
+        setNotification({
+          message: "Added " + newPerson.name,
+          type: "success",
+        });
+        setTimeout(() => {
+          setNotification({
+            message: null,
+            type: "success",
+          });
+        }, 5000);
         setPersons(persons.concat(response));
       });
     } else {
@@ -88,13 +119,37 @@ const App = () => {
           ...person,
           number: newNumber,
         });
-        promise.then((response) => {
-          setPersons(
-            persons.map((person) =>
-              person.id != response.id ? person : response
-            )
-          );
-        });
+        promise
+          .then((response) => {
+            setPersons(
+              persons.map((person) =>
+                person.id !== response.id ? person : response
+              )
+            );
+            setNotification({
+              message: `Updated ${response.name}`,
+              type: "success",
+            });
+            setTimeout(() => {
+              setNotification({
+                message: null,
+                type: "success",
+              });
+            }, 5000);
+          })
+          .catch((error) => {
+            console.error("Error updating person:", error);
+            setNotification({
+              message: "Error updating person",
+              type: "error",
+            });
+            setTimeout(() => {
+              setNotification({
+                message: null,
+                type: "success",
+              });
+            }, 5000);
+          });
       }
     }
   };
@@ -112,23 +167,45 @@ const App = () => {
     setSearch(event.target.value);
   };
 
-  const filteredPeople = persons.filter((person) =>
-    person.name.toLowerCase().includes(search.toLowerCase())
-  );
-
   const handleDelete = (event) => {
     const person = JSON.parse(event.target.getAttribute("data-person"));
     if (window.confirm(`Delete ${person.name}?`)) {
       const promise = personsService.deleteUser(person.id);
-      promise.then((data) =>
-        setPersons(persons.filter((person) => person.id != data.id))
-      );
+      promise
+        .then((response) => {
+          setPersons(persons.filter((p) => p.id !== person.id));
+          setNotification({
+            message: `Deleted ${person.name}`,
+            type: "success",
+          });
+          setTimeout(() => {
+            setNotification({
+              message: null,
+              type: "success",
+            });
+          }, 5000);
+        })
+        .catch((error) => {
+          console.error("Error deleting person:", error);
+          setNotification({ message: "Error deleting person", type: "error" });
+          setTimeout(() => {
+            setNotification({
+              message: null,
+              type: "success",
+            });
+          }, 5000);
+        });
     }
   };
+
+  const filteredPersons = persons.filter((person) =>
+    person.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notification.message} type={notification.type} />
       <Filter search={search} handleSearch={handleSearch} />
       <h3>Add a new</h3>
       <Form
@@ -140,7 +217,7 @@ const App = () => {
       />
       <h3>Numbers</h3>
       <Persons
-        filteredPeople={filteredPeople}
+        filteredPersons={filteredPersons}
         handleDelete={handleDelete}
       ></Persons>
     </div>
