@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import personsService from "./services/persons";
 
 const Filter = (props) => {
   return (
@@ -40,42 +40,62 @@ const Form = (props) => {
 const Persons = (props) => {
   return props.filteredPeople.map((person) => (
     <div key={person.id}>
-      {person.name} {person.number}
+      {person.name} {person.number}{" "}
+      <button data-person={JSON.stringify(person)} onClick={props.handleDelete}>
+        Delete
+      </button>
     </div>
   ));
 };
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    // { name: "Arto Hellas", number: "040-123456", id: 1 },
-    // { name: "Ada Lovelace", number: "39-44-5323523", id: 2 },
-    // { name: "Dan Abramov", number: "12-43-234345", id: 3 },
-    // { name: "Mary Poppendieck", number: "39-23-6423122", id: 4 },
-  ]);
+  const [persons, setPersons] = useState([]);
 
   useEffect(() => {
     const eventHandler = (response) => {
-      setPersons(response.data);
+      setPersons(response);
     };
 
-    const promise = axios.get("http://localhost:3001/persons");
+    const promise = personsService.getAll();
     promise.then(eventHandler);
   }, []);
+
   const [newName, setNewName] = useState("");
-  const [newPhone, setNewPhone] = useState("");
+  const [newNumber, setNewNumber] = useState("");
   const [search, setSearch] = useState("");
 
   const addPerson = (event) => {
     event.preventDefault();
+
     if (!persons.some((person) => person.name == newName)) {
       const maxId = persons.reduce(
         (max, person) => (person.id > max ? person.id : max),
         0
       );
-      const newId = maxId + 1;
-      setPersons([...persons, { name: newName, number: newPhone, id: newId }]);
+      const newId = parseInt(maxId) + 1;
+      const newPerson = {
+        name: newName,
+        number: newNumber,
+        id: newId.toString(),
+      };
+      const promise = personsService.create(newPerson).then((response) => {
+        setPersons(persons.concat(response));
+      });
     } else {
-      alert(`${newName} is already added to phonebook`);
+      if (window.confirm(`Update ${newName} number?`)) {
+        const person = persons.find((person) => person.name == newName);
+        const promise = personsService.update(person.id, {
+          ...person,
+          number: newNumber,
+        });
+        promise.then((response) => {
+          setPersons(
+            persons.map((person) =>
+              person.id != response.id ? person : response
+            )
+          );
+        });
+      }
     }
   };
 
@@ -85,7 +105,7 @@ const App = () => {
   };
   const handlePhoneChange = (event) => {
     event.preventDefault();
-    setNewPhone(event.target.value);
+    setNewNumber(event.target.value);
   };
 
   const handleSearch = (event) => {
@@ -96,6 +116,16 @@ const App = () => {
     person.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleDelete = (event) => {
+    const person = JSON.parse(event.target.getAttribute("data-person"));
+    if (window.confirm(`Delete ${person.name}?`)) {
+      const promise = personsService.deleteUser(person.id);
+      promise.then((data) =>
+        setPersons(persons.filter((person) => person.id != data.id))
+      );
+    }
+  };
+
   return (
     <div>
       <h2>Phonebook</h2>
@@ -105,11 +135,14 @@ const App = () => {
         addPerson={addPerson}
         newName={newName}
         handlePersonChange={handlePersonChange}
-        newPhone={newPhone}
+        newPhone={newNumber}
         handlePhoneChange={handlePhoneChange}
       />
       <h3>Numbers</h3>
-      <Persons filteredPeople={filteredPeople}></Persons>
+      <Persons
+        filteredPeople={filteredPeople}
+        handleDelete={handleDelete}
+      ></Persons>
     </div>
   );
 };
