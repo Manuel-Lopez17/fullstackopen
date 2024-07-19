@@ -20,3 +20,12 @@ npm install express || npm install --save-dev nodemon
 "start": "node index.js",
 "dev": "nodemon index.js",
 "test": "echo \"Error: no test specified\" && exit 1"}
+
+#### cors solution
+
+npm install cors
+
+index.js
+	const cors = require('cors') || import {cors} from "cors"
+
+	app.use(cors())

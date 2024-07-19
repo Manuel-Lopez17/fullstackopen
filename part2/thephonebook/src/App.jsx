@@ -89,15 +89,9 @@ const App = () => {
     event.preventDefault();
 
     if (!persons.some((person) => person.name == newName)) {
-      const maxId = persons.reduce(
-        (max, person) => (person.id > max ? person.id : max),
-        0
-      );
-      const newId = parseInt(maxId) + 1;
       const newPerson = {
         name: newName,
         number: newNumber,
-        id: newId.toString(),
       };
       const promise = personsService.create(newPerson).then((response) => {
         setNotification({

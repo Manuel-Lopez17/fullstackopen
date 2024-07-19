@@ -1,11 +1,12 @@
 import express from "express";
 import morgan from "morgan";
+import cors from "cors";
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 const app = express();
 
-app.use(express.json()); 
-
+app.use(cors())
+app.use(express.json());
 
 morgan.token("body", (req) => JSON.stringify(req.body));
 app.use(
