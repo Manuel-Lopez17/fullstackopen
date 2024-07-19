@@ -1,25 +1,41 @@
-import axios from "axios";
-const baseURL = "http://localhost:3001/api/persons"
-// const baseURL = "https://fullstackopenbackend-manulopez17s-projects.vercel.app/api/persons"
+// src/services/personService.js
+const baseUrl = `${import.meta.env.VITE_API_URL
+	}/api/persons`;
+
+// Ensure the environment variable is defined
+if (!import.meta.env.VITE_API_URL
+) {
+	console.error("REACT_APP_API_URL is not defined!");
+}
 
 const getAll = () => {
-	const request = axios.get(baseURL)
-	return request.then(response => response.data)
-}
+	return fetch(baseUrl).then(response => response.json());
+};
 
-const create = newObject => {
-	const request = axios.post(baseURL, newObject)
-	return request.then(response => response.data)
-}
+const create = (newPerson) => {
+	return fetch(baseUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify(newPerson),
+	}).then(response => response.json());
+};
 
-const update = (id, newObject) => {
-	const request = axios.put(`${baseURL}/${id}`, newObject)
-	return request.then(response => response.data)
-}
+const update = (id, updatedPerson) => {
+	return fetch(`${baseUrl}/${id}`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify(updatedPerson),
+	}).then(response => response.json());
+};
 
-const deleteUser = (id) => {
-	const request = axios.delete(`${baseURL}/${id}`)
-	return request.then(response => response.data)
-}
+const remove = (id) => {
+	return fetch(`${baseUrl}/${id}`, {
+		method: 'DELETE',
+	}).then(response => response.json());
+};
 
-export default { getAll, create, update, deleteUser }
+export default { getAll, create, update, remove };
