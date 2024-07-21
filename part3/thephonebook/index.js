@@ -122,8 +122,7 @@ app.get('/info', (req, res, next) => {
 		.catch(error => next(error));
 });
 
-// Error handling middleware should be after all routes
-app.use((error, req, res, next) => {
+app.use((error, req, res) => {
 	console.error(error.message);
 	res.status(500).json({ error: 'Internal Server Error' });
 });

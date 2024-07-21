@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import personsService from "./services/persons";
 import "./index.css";
 
@@ -93,7 +93,7 @@ const App = () => {
         name: newName,
         number: newNumber,
       };
-      const promise = personsService
+      personsService
         .create(newPerson)
         .then((response) => {
           setNotification({
@@ -111,9 +111,12 @@ const App = () => {
           setNewNumber("");
         })
         .catch((error) => {
-          setErrorMessage(error.response.data.error);
+          setNotification(error.response.data.error);
           setTimeout(() => {
-            setErrorMessage(null);
+            setNotification({
+              message: null,
+              type: "success",
+            });
           }, 5000);
         });
     } else {
@@ -176,7 +179,7 @@ const App = () => {
     if (window.confirm(`Delete ${person.name}?`)) {
       const promise = personsService.deleteUser(person.id);
       promise
-        .then((response) => {
+        .then(() => {
           setPersons(persons.filter((p) => p.id !== person.id));
           setNotification({
             message: `Deleted ${person.name}`,
