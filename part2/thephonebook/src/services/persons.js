@@ -1,41 +1,26 @@
-// src/services/personService.js
-const baseUrl = `${import.meta.env.VITE_API_URL
-	}/api/persons`;
+import axios from 'axios';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}/api/persons`;
 
 // Ensure the environment variable is defined
-if (!import.meta.env.VITE_API_URL
-) {
-	console.error("REACT_APP_API_URL is not defined!");
+if (!import.meta.env.VITE_API_URL) {
+	console.error("VITE_API_URL is not defined!");
 }
 
 const getAll = () => {
-	return fetch(baseUrl).then(response => response.json());
+	return axios.get(baseUrl).then(response => response.data);
 };
 
 const create = (newPerson) => {
-	return fetch(baseUrl, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify(newPerson),
-	}).then(response => response.json());
+	return axios.post(baseUrl, newPerson).then(response => response.data);
 };
 
 const update = (id, updatedPerson) => {
-	return fetch(`${baseUrl}/${id}`, {
-		method: 'PUT',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify(updatedPerson),
-	}).then(response => response.json());
+	return axios.put(`${baseUrl}/${id}`, updatedPerson).then(response => response.data);
 };
 
 const remove = (id) => {
-	return fetch(`${baseUrl}/${id}`, {
-		method: 'DELETE',
-	}).then(response => response.json());
+	return axios.delete(`${baseUrl}/${id}`).then(response => response.data);
 };
 
 export default { getAll, create, update, remove };
