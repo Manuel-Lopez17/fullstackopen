@@ -93,19 +93,29 @@ const App = () => {
         name: newName,
         number: newNumber,
       };
-      const promise = personsService.create(newPerson).then((response) => {
-        setNotification({
-          message: "Added " + newPerson.name,
-          type: "success",
-        });
-        setTimeout(() => {
+      const promise = personsService
+        .create(newPerson)
+        .then((response) => {
           setNotification({
-            message: null,
+            message: "Added " + newPerson.name,
             type: "success",
           });
-        }, 5000);
-        setPersons(persons.concat(response));
-      });
+          setTimeout(() => {
+            setNotification({
+              message: null,
+              type: "success",
+            });
+          }, 5000);
+          setPersons(persons.concat(response));
+          setNewName("");
+          setNewNumber("");
+        })
+        .catch((error) => {
+          setErrorMessage(error.response.data.error);
+          setTimeout(() => {
+            setErrorMessage(null);
+          }, 5000);
+        });
     } else {
       if (window.confirm(`Update ${newName} number?`)) {
         const person = persons.find((person) => person.name == newName);

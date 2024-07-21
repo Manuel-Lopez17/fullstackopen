@@ -13,9 +13,32 @@ mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
 		console.log('error connecting to MongoDB:', error.message);
 	});
 
+const phoneNumberValidator = (number) => {
+	const parts = number.split('-');
+	if (parts.length !== 2) {
+		return false;
+	}
+	if (!/^\d{2,3}$/.test(parts[0]) || !/^\d+$/.test(parts[1])) {
+		return false;
+	}
+	return true;
+};
+
 const personSchema = new mongoose.Schema({
-	name: String,
-	number: String,
+	name: {
+		type: String,
+		minlength: 3,
+		required: true
+	},
+	number: {
+		type: String,
+		minlength: 8,
+		validate: {
+			validator: phoneNumberValidator,
+			message: props => `${props.value} is not a valid phone number!`
+		},
+		required: true
+	}
 });
 
 personSchema.set('toJSON', {
