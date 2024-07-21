@@ -9,21 +9,22 @@ dotenv.config();
 
 const app = express();
 
-const allowedOrigins = [
-	'http://localhost:5173',
-	'https://fullstackopenfrontend-manulopez17s-projects.vercel.app'
-];
+// const allowedOrigins = [
+// 	'http://localhost:5173',
+// 	'https://fullstackopenfrontend-manulopez17s-projects.vercel.app'
+// ];
 
-// CORS middleware should be set up early in the middleware stack
-app.use(cors({
-	origin: (origin, callback) => {
-		if (!origin || allowedOrigins.includes(origin)) {
-			callback(null, true);
-		} else {
-			callback(new Error('Not allowed by CORS'));
-		}
-	}
-}));
+// app.use(cors({
+// 	origin: (origin, callback) => {
+// 		if (!origin || allowedOrigins.includes(origin)) {
+// 			callback(null, true);
+// 		} else {
+// 			callback(new Error('Not allowed by CORS'));
+// 		}
+// 	}
+// }));
+
+app.use(cors())
 
 app.use(express.json());
 app.use(morgan('tiny'));
