@@ -2,13 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
-import Person from './models/person.js';
 import mongoose from 'mongoose';
+import Person from './models/person.js';
 
 dotenv.config();
 
 const app = express();
-
 
 const errorHandler = (error, req, res, next) => {
 	console.error(error.message);
@@ -19,13 +18,6 @@ const errorHandler = (error, req, res, next) => {
 
 	next(error);
 };
-
-
-
-app.use(cors());
-app.use(express.json());
-app.use(morgan('tiny'));
-app.use(errorHandler);
 
 const allowedOrigins = [
 	'http://localhost:5173',
@@ -42,22 +34,30 @@ app.use(cors({
 	}
 }));
 
+app.use(express.json());
+app.use(morgan('tiny'));
 
-if (process.argv.length < 3) {
-	console.log('Please provide the password as an argument: node mongo.mjs <password>');
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+	console.error('MONGODB_URI is not defined in .env file');
 	process.exit(1);
 }
 
-const password = process.argv[2];
-const url = process.env.MONGODB_URI.replace('<password>', password);
-
-mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
-
-
-app.get('/api/persons', (req, res) => {
-	Person.find({}).then(persons => {
-		res.json(persons);
+mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+	.then(() => {
+		console.log('connected to MongoDB');
+	})
+	.catch((error) => {
+		console.log('error connecting to MongoDB:', error.message);
 	});
+
+app.get('/api/persons', (req, res, next) => {
+	Person.find({})
+		.then(persons => {
+			res.json(persons);
+		})
+		.catch(error => next(error));
 });
 
 app.get('/api/persons/:id', (req, res, next) => {
@@ -72,7 +72,7 @@ app.get('/api/persons/:id', (req, res, next) => {
 		.catch(error => next(error));
 });
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
 	const body = req.body;
 
 	if (!body.name || !body.number) {
@@ -84,9 +84,11 @@ app.post('/api/persons', (req, res) => {
 		number: body.number,
 	});
 
-	person.save().then(savedPerson => {
-		res.json(savedPerson);
-	});
+	person.save()
+		.then(savedPerson => {
+			res.json(savedPerson);
+		})
+		.catch(error => next(error));
 });
 
 app.delete('/api/persons/:id', (req, res, next) => {
@@ -128,6 +130,8 @@ app.get('/info', (req, res, next) => {
 		.catch(error => next(error));
 });
 
+// Error handling middleware should be after all routes
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
