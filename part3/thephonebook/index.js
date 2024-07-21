@@ -1,117 +1,120 @@
-import express from "express";
-import morgan from "morgan";
-import cors from "cors";
+import express from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+import dotenv from 'dotenv';
+import Person from './models/person.js';
+import mongoose from 'mongoose';
 
-const PORT = process.env.PORT || 3001;
+dotenv.config();
+
 const app = express();
 
-app.use(cors())
+
+const errorHandler = (error, req, res, next) => {
+	console.error(error.message);
+
+	if (error.name === 'CastError' && error.kind === 'ObjectId') {
+		return res.status(400).json({ error: 'malformatted id' });
+	}
+
+	next(error);
+};
+
+
+
+app.use(cors());
 app.use(express.json());
+app.use(morgan('tiny'));
+app.use(errorHandler);
 
-morgan.token("body", (req) => JSON.stringify(req.body));
-app.use(
-	morgan(":method :url :status :res[content-length] - :response-time ms :body", {
-		skip: (req) => req.method !== "POST",
-	})
-);
-app.use(morgan("tiny"));
 
-let persons = [
-	{
-		id: 1,
-		name: "Arto Hellas",
-		number: "040-123456",
-	},
-	{
-		id: 2,
-		name: "Ada Lovelace",
-		number: "39-44-5323523",
-	},
-	{
-		id: 3,
-		name: "Dan Abramov",
-		number: "12-43-234345",
-	},
-	{
-		id: 4,
-		name: "Mary Poppendieck",
-		number: "39-23-6423122",
-	},
-];
+if (process.argv.length < 3) {
+	console.log('Please provide the password as an argument: node mongo.mjs <password>');
+	process.exit(1);
+}
 
-app.get("/api/persons", (req, res) => {
-	res.json(persons);
+const password = process.argv[2];
+const url = process.env.MONGODB_URI.replace('<password>', password);
+
+mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
+
+
+app.get('/api/persons', (req, res) => {
+	Person.find({}).then(persons => {
+		res.json(persons);
+	});
 });
 
-app.get("/api/persons/:id", (req, res) => {
-	const id = Number(req.params.id);
-	const person = persons.find((person) => person.id === id);
-
-	if (person) {
-		res.json(person);
-	} else {
-		res.status(404).send({ error: "Person not found" });
-	}
+app.get('/api/persons/:id', (req, res, next) => {
+	Person.findById(req.params.id)
+		.then(person => {
+			if (person) {
+				res.json(person);
+			} else {
+				res.status(404).end();
+			}
+		})
+		.catch(error => next(error));
 });
 
-app.delete("/api/persons/:id", (req, res) => {
-	const id = Number(req.params.id);
-	const personIndex = persons.findIndex((person) => person.id === id);
+app.post('/api/persons', (req, res) => {
+	const body = req.body;
 
-	if (personIndex !== -1) {
-		persons.splice(personIndex, 1);
-		res.status(204).end();
-	} else {
-		res.status(404).send({ error: "Person not found" });
+	if (!body.name || !body.number) {
+		return res.status(400).json({ error: 'name or number missing' });
 	}
+
+	const person = new Person({
+		name: body.name,
+		number: body.number,
+	});
+
+	person.save().then(savedPerson => {
+		res.json(savedPerson);
+	});
 });
 
-app.post("/api/persons", (req, res) => {
-	const { name, number } = req.body;
+app.delete('/api/persons/:id', (req, res, next) => {
+	Person.findByIdAndRemove(req.params.id)
+		.then(result => {
+			if (result) {
+				res.status(204).end();
+			} else {
+				res.status(404).json({ error: 'Person not found' });
+			}
+		})
+		.catch(error => next(error));
+});
 
-	if (!name || !number) {
-		return res.status(400).json({ error: "Name or number is missing" });
-	}
+app.put('/api/persons/:id', (req, res, next) => {
+	const body = req.body;
 
-	if (persons.find((person) => person.name === name)) {
-		return res.status(400).json({ error: "Name must be unique" });
-	}
-
-	const newPerson = {
-		id: Math.floor(Math.random() * 1000000),
-		name,
-		number,
+	const person = {
+		name: body.name,
+		number: body.number,
 	};
 
-	persons.push(newPerson);
-	res.status(201).json(newPerson);
+	Person.findByIdAndUpdate(req.params.id, person, { new: true, runValidators: true, context: 'query' })
+		.then(updatedPerson => {
+			res.json(updatedPerson);
+		})
+		.catch(error => next(error));
 });
 
-app.put("/api/persons/:id", (req, res) => {
-	const id = Number(req.params.id);
-	const { name, number } = req.body;
-
-	const personIndex = persons.findIndex((person) => person.id === id);
-
-	if (personIndex !== -1) {
-		const updatedPerson = { ...persons[personIndex], name, number };
-		persons[personIndex] = updatedPerson;
-		res.json(updatedPerson);
-	} else {
-		res.status(404).send({ error: "Person not found" });
-	}
+app.get('/info', (req, res, next) => {
+	Person.countDocuments({})
+		.then(count => {
+			const info = `
+        <p>Phonebook has info for ${count} people</p>
+        <p>${new Date()}</p>
+      `;
+			res.send(info);
+		})
+		.catch(error => next(error));
 });
 
-app.get("/info", (req, res) => {
-	const requestTime = new Date();
-	const responseText = `
-    <p>Phonebook has info for ${persons.length} people</p>
-    <p>${requestTime}</p>
-  `;
 
-	res.send(responseText);
-});
-
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
 	console.log(`Server running on port ${PORT}`);
 });
