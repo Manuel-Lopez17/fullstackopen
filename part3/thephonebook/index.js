@@ -27,6 +27,21 @@ app.use(express.json());
 app.use(morgan('tiny'));
 app.use(errorHandler);
 
+const allowedOrigins = [
+	'http://localhost:5173',
+	'https://fullstackopenfrontend-manulopez17s-projects.vercel.app'
+];
+
+app.use(cors({
+	origin: (origin, callback) => {
+		if (!origin || allowedOrigins.includes(origin)) {
+			callback(null, true);
+		} else {
+			callback(new Error('Not allowed by CORS'));
+		}
+	}
+}));
+
 
 if (process.argv.length < 3) {
 	console.log('Please provide the password as an argument: node mongo.mjs <password>');
