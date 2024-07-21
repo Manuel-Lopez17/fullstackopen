@@ -9,21 +9,12 @@ dotenv.config();
 
 const app = express();
 
-const errorHandler = (error, req, res, next) => {
-	console.error(error.message);
-
-	if (error.name === 'CastError' && error.kind === 'ObjectId') {
-		return res.status(400).json({ error: 'malformatted id' });
-	}
-
-	next(error);
-};
-
 const allowedOrigins = [
 	'http://localhost:5173',
 	'https://fullstackopenfrontend-manulopez17s-projects.vercel.app'
 ];
 
+// CORS middleware should be set up early in the middleware stack
 app.use(cors({
 	origin: (origin, callback) => {
 		if (!origin || allowedOrigins.includes(origin)) {
@@ -131,7 +122,10 @@ app.get('/info', (req, res, next) => {
 });
 
 // Error handling middleware should be after all routes
-app.use(errorHandler);
+app.use((error, req, res, next) => {
+	console.error(error.message);
+	res.status(500).json({ error: 'Internal Server Error' });
+});
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
