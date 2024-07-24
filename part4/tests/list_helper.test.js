@@ -1,14 +1,11 @@
-const { describe, test } = require('node:test')
-const assert = require('node:assert')
-const listHelper = require('../utils/list_helper')
+const listHelper = require('../utils/list_helper');
 
 test('dummy returns one', () => {
-	const blogs = []
+	const blogs = [];
 
-	const result = listHelper.dummy(blogs)
-	assert.strictEqual(result, 1)
-})
-
+	const result = listHelper.dummy(blogs);
+	expect(result).toBe(1);
+});
 
 describe('total likes', () => {
 	const listWithOneBlog = [
@@ -20,12 +17,12 @@ describe('total likes', () => {
 			likes: 5,
 			__v: 0
 		}
-	]
+	];
 
 	test('when list has only one blog, equals the likes of that', () => {
-		const result = listHelper.totalLikes(listWithOneBlog)
-		assert.strictEqual(result, 5)
-	})
+		const result = listHelper.totalLikes(listWithOneBlog);
+		expect(result).toBe(5);
+	});
 
 	const listWithMultipleBlogs = [
 		{
@@ -52,18 +49,18 @@ describe('total likes', () => {
 			likes: 3,
 			__v: 0
 		}
-	]
+	];
 
 	test('when list has multiple blogs, equals the sum of likes', () => {
-		const result = listHelper.totalLikes(listWithMultipleBlogs)
-		assert.strictEqual(result, 15)
-	})
+		const result = listHelper.totalLikes(listWithMultipleBlogs);
+		expect(result).toBe(15);
+	});
 
 	test('when list is empty, equals zero', () => {
-		const result = listHelper.totalLikes([])
-		assert.strictEqual(result, 0)
-	})
-})
+		const result = listHelper.totalLikes([]);
+		expect(result).toBe(0);
+	});
+});
 
 describe('most blogs', () => {
 	const listWithMultipleBlogs = [
@@ -107,18 +104,18 @@ describe('most blogs', () => {
 			likes: 1,
 			__v: 0
 		}
-	]
+	];
 
 	test('author with most blogs', () => {
-		const result = listHelper.mostBlogs(listWithMultipleBlogs)
-		assert.deepStrictEqual(result, { author: 'Robert C. Martin', blogs: 3 })
-	})
+		const result = listHelper.mostBlogs(listWithMultipleBlogs);
+		expect(result).toEqual({ author: 'Robert C. Martin', blogs: 3 });
+	});
 
 	test('when list is empty, equals null', () => {
-		const result = listHelper.mostBlogs([])
-		assert.strictEqual(result, null)
-	})
-})
+		const result = listHelper.mostBlogs([]);
+		expect(result).toBe(null);
+	});
+});
 
 describe('most likes', () => {
 	const listWithMultipleBlogs = [
@@ -162,16 +159,23 @@ describe('most likes', () => {
 			likes: 1,
 			__v: 0
 		}
-	]
+	];
 
 	test('author with most likes', () => {
-		const result = listHelper.mostLikes(listWithMultipleBlogs)
-		assert.deepStrictEqual(result, { author: 'Robert C. Martin', likes: 10 })
-	})
+		const result = listHelper.mostLikes(listWithMultipleBlogs);
+		expect(result).toEqual({ author: 'Robert C. Martin', likes: 10 });
+	});
 
 	test('when list is empty, equals null', () => {
-		const result = listHelper.mostLikes([])
-		assert.strictEqual(result, null)
-	})
-})
+		const result = listHelper.mostLikes([]);
+		expect(result).toBe(null);
+	});
+});
+
+// test('unique identifier property of the blog posts is named id', async () => {
+// 	const response = await api.get('/api/blogs')
+// 	response.body.forEach(blog => {
+// 		expect(blog.id).toBeDefined()
+// 	})
+// })
 
