@@ -171,11 +171,3 @@ describe('most likes', () => {
 		expect(result).toBe(null);
 	});
 });
-
-// test('unique identifier property of the blog posts is named id', async () => {
-// 	const response = await api.get('/api/blogs')
-// 	response.body.forEach(blog => {
-// 		expect(blog.id).toBeDefined()
-// 	})
-// })
-
