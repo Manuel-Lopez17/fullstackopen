@@ -31,4 +31,10 @@ app.use('/api/login', loginRouter)
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)
 
+
+const PORT = config.PORT || 3001
+app.listen(PORT, () => {
+	console.log(`Server running on port ${PORT}`)
+})
+
 module.exports = app
