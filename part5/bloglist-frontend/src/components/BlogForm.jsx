@@ -1,56 +1,46 @@
-// src/components/BlogForm.js
-
 import React, { useState } from "react";
-import blogService from "../services/blogs";
 
-const BlogForm = ({ setBlogs }) => {
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const [url, setUrl] = useState("");
+const BlogForm = ({ createBlog }) => {
+  const [newTitle, setNewTitle] = useState("");
+  const [newAuthor, setNewAuthor] = useState("");
+  const [newUrl, setNewUrl] = useState("");
 
-  const handleSubmit = async (event) => {
+  const handleTitleChange = (event) => setNewTitle(event.target.value);
+  const handleAuthorChange = (event) => setNewAuthor(event.target.value);
+  const handleUrlChange = (event) => setNewUrl(event.target.value);
+
+  const addBlog = (event) => {
     event.preventDefault();
-    const newBlog = { title, author, url };
-    try {
-      await blogService.create(newBlog);
-      const blogs = await blogService.getAll();
-      setBlogs(blogs);
-      setTitle("");
-      setAuthor("");
-      setUrl("");
-    } catch (exception) {
-      console.error("Failed to add blog");
-    }
+    createBlog({
+      title: newTitle,
+      author: newAuthor,
+      url: newUrl,
+    });
+
+    setNewTitle("");
+    setNewAuthor("");
+    setNewUrl("");
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        Title
-        <input
-          type="text"
-          value={title}
-          onChange={({ target }) => setTitle(target.value)}
-        />
-      </div>
-      <div>
-        Author
-        <input
-          type="text"
-          value={author}
-          onChange={({ target }) => setAuthor(target.value)}
-        />
-      </div>
-      <div>
-        URL
-        <input
-          type="text"
-          value={url}
-          onChange={({ target }) => setUrl(target.value)}
-        />
-      </div>
-      <button type="submit">create</button>
-    </form>
+    <div>
+      <h2>Create a new blog</h2>
+      <form onSubmit={addBlog}>
+        <div>
+          title:
+          <input value={newTitle} onChange={handleTitleChange} />
+        </div>
+        <div>
+          author:
+          <input value={newAuthor} onChange={handleAuthorChange} />
+        </div>
+        <div>
+          url:
+          <input value={newUrl} onChange={handleUrlChange} />
+        </div>
+        <button type="submit">create</button>
+      </form>
+    </div>
   );
 };
 

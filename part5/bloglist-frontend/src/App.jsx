@@ -1,34 +1,31 @@
-// src/App.js
-
-import React, { useState, useEffect } from "react";
-import loginService from "./services/login";
-import blogService from "./services/blogs";
+import React, { useState, useEffect, useRef } from "react";
 import Blog from "./components/Blog";
+import blogService from "./services/blogs";
+import loginService from "./services/login";
 import LoginForm from "./components/LoginForm";
-import BlogForm from "./components/BlogForm";
 import Notification from "./components/Notification";
+import Togglable from "./components/Togglable";
+import BlogForm from "./components/BlogForm";
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
   const [user, setUser] = useState(null);
-  const [notification, setNotification] = useState(null);
-  const [notificationType, setNotificationType] = useState("");
+  const [errorMessage, setErrorMessage] = useState(null);
+
+  const blogFormRef = useRef();
+
+  useEffect(() => {
+    blogService.getAll().then((blogs) => setBlogs(blogs));
+  }, []);
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem("loggedBlogappUser");
-    console.log(loggedUserJSON);
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON);
       setUser(user);
       blogService.setToken(user.token);
-      fetchBlogs();
     }
   }, []);
-
-  const fetchBlogs = async () => {
-    const blogs = await blogService.getAll();
-    setBlogs(blogs);
-  };
 
   const handleLogin = async (username, password) => {
     try {
@@ -36,13 +33,10 @@ const App = () => {
       window.localStorage.setItem("loggedBlogappUser", JSON.stringify(user));
       blogService.setToken(user.token);
       setUser(user);
-      fetchBlogs();
     } catch (exception) {
-      setNotification("Wrong username or password");
-      setNotificationType("error");
+      setErrorMessage("Wrong credentials");
       setTimeout(() => {
-        setNotification(null);
-        setNotificationType("");
+        setErrorMessage(null);
       }, 5000);
     }
   };
@@ -50,52 +44,35 @@ const App = () => {
   const handleLogout = () => {
     window.localStorage.removeItem("loggedBlogappUser");
     setUser(null);
-    setNotification("Logged out successfully");
-    setNotificationType("info");
-    setTimeout(() => {
-      setNotification(null);
-      setNotificationType("");
-    }, 5000);
   };
 
-  const handleBlogCreation = async (newBlog) => {
-    try {
-      await blogService.create(newBlog);
-      const blogs = await blogService.getAll();
-      setBlogs(blogs);
-      setNotification("Blog added successfully");
-      setNotificationType("info");
-    } catch (exception) {
-      setNotification("Failed to add blog");
-      setNotificationType("error");
-    }
-    setTimeout(() => {
-      setNotification(null);
-      setNotificationType("");
-    }, 5000);
+  const addBlog = async (blogObject) => {
+    blogFormRef.current.toggleVisibility();
+    const returnedBlog = await blogService.create(blogObject);
+    setBlogs(blogs.concat(returnedBlog));
   };
-
-  if (user === null) {
-    return (
-      <div>
-        <h2>Log in to application</h2>
-        <Notification message={notification} type={notificationType} />
-        <LoginForm handleLogin={handleLogin} />
-      </div>
-    );
-  }
 
   return (
     <div>
       <h2>blogs</h2>
-      <p>
-        {user.name} logged in <button onClick={handleLogout}>logout</button>
-      </p>
-      <Notification message={notification} type={notificationType} />
-      <BlogForm handleBlogCreation={handleBlogCreation} />
-      {blogs.map((blog) => (
-        <Blog key={blog.id} blog={blog} />
-      ))}
+      <Notification message={errorMessage} />
+      {user === null ? (
+        <Togglable buttonLabel="log in">
+          <LoginForm handleLogin={handleLogin} />
+        </Togglable>
+      ) : (
+        <div>
+          <p>
+            {user.name} logged in <button onClick={handleLogout}>logout</button>
+          </p>
+          <Togglable buttonLabel="new blog" ref={blogFormRef}>
+            <BlogForm createBlog={addBlog} />
+          </Togglable>
+          {blogs.map((blog) => (
+            <Blog key={blog.id} blog={blog} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
