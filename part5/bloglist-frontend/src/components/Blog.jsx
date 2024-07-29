@@ -1,8 +1,8 @@
-import React from 'react'
-import PropTypes from 'prop-types'
+import React from "react";
+import PropTypes from "prop-types";
 
 const Blog = ({ blog, handleLike, handleDelete, user }) => {
-  const showDeleteButton = user && blog.user.username === user.username
+  const showDeleteButton = user && blog.user.username === user.username;
 
   return (
     <div>
@@ -12,7 +12,7 @@ const Blog = ({ blog, handleLike, handleDelete, user }) => {
       <div>
         <a href={blog.url}>{blog.url}</a>
         <p>
-          {blog.likes} likes{' '}
+          {blog.likes} likes{" "}
           <button onClick={() => handleLike(blog)}>like</button>
         </p>
         <p>added by {blog.user.name}</p>
@@ -21,18 +21,25 @@ const Blog = ({ blog, handleLike, handleDelete, user }) => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
 Blog.propTypes = {
   blog: PropTypes.shape({
     title: PropTypes.string.isRequired,
     author: PropTypes.string.isRequired,
-    url: PropTypes.string.isRequired,
-    likes: PropTypes.number.isRequired,
+    url: PropTypes.string,
+    likes: PropTypes.number,
+    user: PropTypes.shape({
+      username: PropTypes.string,
+      name: PropTypes.string,
+    }),
   }).isRequired,
+  user: PropTypes.shape({
+    username: PropTypes.string.isRequired,
+  }),
   handleLike: PropTypes.func.isRequired,
-  handleDelete: PropTypes.func.isRequired,
-}
+  handleRemove: PropTypes.func.isRequired,
+};
 
-export default Blog
+export default Blog;
