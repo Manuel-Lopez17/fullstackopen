@@ -1,24 +1,35 @@
-import { createSlice } from '@reduxjs/toolkit'
-import { v1 as uuid } from 'uuid'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import axios from 'axios'
 
-const initialAnecdotes = [
-  'If it hurts, do it more often',
-  'Adding manpower to a late software project makes it later!',
-  'The first 90 percent of the code accounts for the first 90 percent of the development time...The remaining 10 percent of the code accounts for the other 90 percent of the development time.',
-  'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
-  'Premature optimization is the root of all evil.',
-  'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.'
-]
+const baseUrl = 'http://localhost:3001/anecdotes'
 
-const initialState = initialAnecdotes.map(anecdote => ({
-  content: anecdote,
-  id: uuid(),
-  votes: 0
-}))
+export const fetchAnecdotes = createAsyncThunk(
+  'anecdotes/fetchAnecdotes',
+  async () => {
+    const response = await axios.get(baseUrl)
+    return response.data
+  }
+)
+
+export const createAnecdote = createAsyncThunk(
+  'anecdotes/createAnecdote',
+  async (anecdote) => {
+    const response = await axios.post(baseUrl, anecdote)
+    return response.data
+  }
+)
+
+export const updateAnecdote = createAsyncThunk(
+  'anecdotes/updateAnecdote',
+  async (anecdote) => {
+    const response = await axios.put(`${baseUrl}/${anecdote.id}`, anecdote)
+    return response.data
+  }
+)
 
 const anecdoteSlice = createSlice({
   name: 'anecdotes',
-  initialState,
+  initialState: [],
   reducers: {
     voteAnecdote (state, action) {
       const id = action.payload
@@ -26,16 +37,24 @@ const anecdoteSlice = createSlice({
       if (anecdoteToChange) {
         anecdoteToChange.votes += 1
       }
-    },
-    createAnecdote (state, action) {
-      state.push({
-        content: action.payload,
-        id: uuid(),
-        votes: 0
-      })
     }
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchAnecdotes.fulfilled, (state, action) => {
+        return action.payload
+      })
+      .addCase(createAnecdote.fulfilled, (state, action) => {
+        state.push(action.payload)
+      })
+      .addCase(updateAnecdote.fulfilled, (state, action) => {
+        const updatedAnecdote = action.payload
+        return state.map(anecdote =>
+          anecdote.id === updatedAnecdote.id ? updatedAnecdote : anecdote
+        )
+      })
   }
 })
 
-export const { voteAnecdote, createAnecdote } = anecdoteSlice.actions
+export const { voteAnecdote } = anecdoteSlice.actions
 export default anecdoteSlice.reducer
