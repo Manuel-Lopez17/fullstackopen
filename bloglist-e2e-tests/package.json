@@ -1,0 +1,22 @@
+{
+  "name": "bloglist-e2e-tests",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start-backend": "cross-env PORT=3001 NODE_ENV=test node C:/Users/manu1/Documentos/GitHub/fullstackopen/part4/index.js",
+    "test:e2e": "npm-run-all --parallel start-backend e2e-test",
+    "e2e-test": "playwright test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@playwright/test": "^1.45.3",
+    "cross-env": "^7.0.3",
+    "start-server-and-test": "^2.0.5"
+  },
+  "dependencies": {
+    "mongoose": "^8.5.1"
+  }
+}

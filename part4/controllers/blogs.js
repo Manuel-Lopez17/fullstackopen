@@ -10,7 +10,13 @@ blogsRouter.get('/', async (request, response) => {
 
 blogsRouter.post('/', async (request, response) => {
 	const body = request.body
-	const token = request.token
+	let token
+
+	const authorization = request.get('authorization')
+	token = null;
+	if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+		token = authorization.substring(7)
+	}
 
 	if (!body.title || !body.url) {
 		return response.status(400).json({ error: 'title and url are required' })
@@ -43,8 +49,11 @@ blogsRouter.post('/', async (request, response) => {
 })
 
 blogsRouter.delete('/:id', async (request, response) => {
-	const token = request.token
-
+	const authorization = request.get('authorization')
+	token = null;
+	if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+		token = authorization.substring(7)
+	}
 	if (!token) {
 		return response.status(401).json({ error: 'token missing or invalid' })
 	}
@@ -63,19 +72,22 @@ blogsRouter.delete('/:id', async (request, response) => {
 		return response.status(401).json({ error: 'unauthorized' })
 	}
 
-	await Blog.findByIdAndRemove(request.params.id)
+	await Blog.findByIdAndDelete(request.params.id)
 	response.status(204).end()
 })
 
 blogsRouter.put('/:id', async (request, response) => {
-	const body = request.body
+	const { title, author, url, likes, user } = request.body;
+
+	const userId = user.id || user;
+
 	const blog = {
-		title: body.title,
-		author: body.author,
-		url: body.url,
-		likes: body.likes,
-		user: body.user
-	}
+		title,
+		author,
+		url,
+		likes,
+		user: userId
+	};
 
 	const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
 	response.json(updatedBlog)

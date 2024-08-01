@@ -1,9 +1,8 @@
-import React from "react";
-import PropTypes from "prop-types";
+import React from 'react';
+import PropTypes from 'prop-types';
 
-const Blog = ({ blog, handleLike, handleDelete, user }) => {
+const Blog = ({ blog, handleLike, handleRemove, user }) => {
   const showDeleteButton = user && blog.user.username === user.username;
-
   return (
     <div>
       <h3>
@@ -12,12 +11,12 @@ const Blog = ({ blog, handleLike, handleDelete, user }) => {
       <div>
         <a href={blog.url}>{blog.url}</a>
         <p>
-          {blog.likes} likes{" "}
+          {blog.likes} likes{' '}
           <button onClick={() => handleLike(blog)}>like</button>
         </p>
-        <p>added by {blog.user.name}</p>
+        <p>added by {blog.user.username}</p>
         {showDeleteButton && (
-          <button onClick={() => handleDelete(blog)}>delete</button>
+          <button onClick={() => handleRemove(blog)}>delete</button>
         )}
       </div>
     </div>
@@ -26,6 +25,7 @@ const Blog = ({ blog, handleLike, handleDelete, user }) => {
 
 Blog.propTypes = {
   blog: PropTypes.shape({
+    id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     author: PropTypes.string.isRequired,
     url: PropTypes.string,
@@ -33,13 +33,13 @@ Blog.propTypes = {
     user: PropTypes.shape({
       username: PropTypes.string,
       name: PropTypes.string,
-    }),
+    }).isRequired,
   }).isRequired,
-  user: PropTypes.shape({
-    username: PropTypes.string.isRequired,
-  }),
   handleLike: PropTypes.func.isRequired,
   handleRemove: PropTypes.func.isRequired,
+  user: PropTypes.shape({
+    username: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default Blog;

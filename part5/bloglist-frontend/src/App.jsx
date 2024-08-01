@@ -10,7 +10,7 @@ import BlogForm from './components/BlogForm';
 const App = () => {
   const [blogs, setBlogs] = useState([]);
   const [user, setUser] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
+  const [message, setMessage] = useState(null);
 
   const blogFormRef = useRef();
 
@@ -36,9 +36,9 @@ const App = () => {
       blogService.setToken(user.token);
       setUser(user);
     } catch (exception) {
-      setErrorMessage('Wrong credentials');
+      setMessage('Wrong credentials');
       setTimeout(() => {
-        setErrorMessage(null);
+        setMessage(null);
       }, 5000);
     }
   };
@@ -58,24 +58,21 @@ const App = () => {
     const updatedBlog = {
       ...blog,
       likes: blog.likes + 1,
-      user: blog.user.id,
+      user: blog.user,
     };
     const returnedBlog = await blogService.update(blog.id, updatedBlog);
     setBlogs(blogs.map((b) => (b.id !== blog.id ? b : returnedBlog)));
   };
 
-  const handleDelete = async (blog) => {
+  const handleRemove = async (blog) => {
     if (window.confirm(`Remove blog ${blog.title} by ${blog.author}?`)) {
       await blogService.remove(blog.id);
       setBlogs(
         blogs.filter((b) => b.id !== blog.id).sort((a, b) => b.likes - a.likes)
       );
-      setErrorMessage({
-        message: `Blog ${blog.title} by ${blog.author} removed`,
-        type: 'success',
-      });
+      setMessage(`Blog ${blog.title} by ${blog.author} removed`);
       setTimeout(() => {
-        setErrorMessage(null);
+        setMessage(null);
       }, 5000);
     }
   };
@@ -83,7 +80,7 @@ const App = () => {
   return (
     <div>
       <h2>blogs</h2>
-      <Notification message={errorMessage} />
+      <Notification message={message} />
       {user === null ? (
         <Togglable buttonLabel="log in">
           <LoginForm handleLogin={handleLogin} />
@@ -101,7 +98,7 @@ const App = () => {
               key={blog.id}
               blog={blog}
               handleLike={handleLike}
-              handleDelete={handleDelete}
+              handleRemove={handleRemove}
               user={user}
             />
           ))}

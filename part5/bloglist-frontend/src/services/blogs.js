@@ -13,6 +13,8 @@ const setToken = newToken => {
   token = newToken;  // Set the token
 };
 
+console.log('token: ', token);
+
 const getAll = async () => {
   const config = {
     headers: { Authorization: `Bearer ${token}` },
@@ -25,7 +27,6 @@ const create = async (newBlog) => {
   const config = {
     headers: { Authorization: `Bearer ${token}` },
   };
-  console.log(config);
 
   const response = await axios.post(baseUrl, newBlog, config);
   return response.data;

@@ -25,7 +25,19 @@ npm install express || npm install --save-dev nodemon
 
 npm install cors
 
-index.js
+./index.js
 	const cors = require('cors') || import {cors} from "cors"
 
 	app.use(cors())
+
+#### playwright
+
+install: npm init playwright@latest
+add to package.json: {
+  // ...
+  "scripts": {
+    "test": "playwright test",
+    "test:report": "playwright show-report"
+  },
+  // ...
+}
