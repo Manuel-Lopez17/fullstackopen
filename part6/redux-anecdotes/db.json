@@ -33,7 +33,17 @@
     {
       "id": "42b7",
       "content": "NEW ANECDOTE",
-      "votes": 2
+      "votes": 5
+    },
+    {
+      "id": "775a",
+      "content": "NEW ANECDOTE 2",
+      "votes": 3
+    },
+    {
+      "id": "9f06",
+      "content": "NEW ANECDOTE 3",
+      "votes": 0
     }
   ]
 }

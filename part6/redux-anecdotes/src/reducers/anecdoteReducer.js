@@ -13,8 +13,8 @@ export const fetchAnecdotes = createAsyncThunk(
 
 export const createAnecdote = createAsyncThunk(
   'anecdotes/createAnecdote',
-  async (anecdote) => {
-    const response = await axios.post(baseUrl, anecdote)
+  async (content) => {
+    const response = await axios.post(baseUrl, { content, votes: 0 })
     return response.data
   }
 )
@@ -30,20 +30,10 @@ export const updateAnecdote = createAsyncThunk(
 const anecdoteSlice = createSlice({
   name: 'anecdotes',
   initialState: [],
-  reducers: {
-    voteAnecdote (state, action) {
-      const id = action.payload
-      const anecdoteToChange = state.find(a => a.id === id)
-      if (anecdoteToChange) {
-        anecdoteToChange.votes += 1
-      }
-    }
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchAnecdotes.fulfilled, (state, action) => {
-        return action.payload
-      })
+      .addCase(fetchAnecdotes.fulfilled, (state, action) => action.payload)
       .addCase(createAnecdote.fulfilled, (state, action) => {
         state.push(action.payload)
       })
@@ -56,5 +46,4 @@ const anecdoteSlice = createSlice({
   }
 })
 
-export const { voteAnecdote } = anecdoteSlice.actions
 export default anecdoteSlice.reducer

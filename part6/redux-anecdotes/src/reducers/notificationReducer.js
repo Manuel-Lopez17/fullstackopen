@@ -7,7 +7,7 @@ const notificationSlice = createSlice({
 		setNotification (state, action) {
 			return action.payload
 		},
-		clearNotification (state, action) {
+		clearNotification () {
 			return ''
 		}
 	}
@@ -16,7 +16,7 @@ const notificationSlice = createSlice({
 export const { setNotification, clearNotification } = notificationSlice.actions
 
 export const showNotification = (message, seconds) => {
-	return async dispatch => {
+	return dispatch => {
 		dispatch(setNotification(message))
 		setTimeout(() => {
 			dispatch(clearNotification())
