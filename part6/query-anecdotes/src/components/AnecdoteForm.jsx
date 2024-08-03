@@ -5,15 +5,15 @@ import { useNotification } from "../NotificationContext";
 
 const AnecdoteForm = () => {
   const queryClient = useQueryClient();
-  const { addNotification } = useNotification();
+  const { dispatch } = useNotification();
 
   const newAnecdoteMutation = useMutation(createAnecdote, {
     onSuccess: () => {
       queryClient.invalidateQueries("anecdotes");
-      addNotification("Anecdote created successfully!", "info", 5000);
+      dispatch(setNotification("Anecdote created successfully!", "info", 5000));
     },
-    onError: () => {
-      addNotification("Failed to create anecdote!", "error", 5000);
+    onError: (error) => {
+      dispatch(setNotification(error.response.data.error, "error", 5000));
     },
   });
 
@@ -24,10 +24,12 @@ const AnecdoteForm = () => {
     if (content.length >= 5) {
       newAnecdoteMutation.mutate({ content, votes: 0 });
     } else {
-      addNotification(
-        "Anecdote content is too short, it should have at least 5 characters",
-        "error",
-        5000
+      dispatch(
+        setNotification(
+          "Anecdote content is too short, it should have at least 5 characters",
+          "error",
+          5000
+        )
       );
     }
   };

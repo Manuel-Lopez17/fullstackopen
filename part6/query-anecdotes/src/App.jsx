@@ -15,15 +15,15 @@ const App = () => {
 
 const Main = () => {
   const queryClient = useQueryClient();
-  const { addNotification } = useNotification();
+  const { dispatch } = useNotification();
 
   const handleVote = useMutation(updateAnecdote, {
     onSuccess: () => {
       queryClient.invalidateQueries("anecdotes");
-      addNotification("Vote was successful!", "info", 5000);
+      dispatch(setNotification("Vote was successful!", "info", 5000));
     },
     onError: () => {
-      addNotification("Voting failed!", "error", 5000);
+      dispatch(setNotification("Voting failed!", "error", 5000));
     },
   });
 
