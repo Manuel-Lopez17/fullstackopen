@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import { useField } from "./hooks";
+import { useState } from "react";
 import {
   BrowserRouter as Router,
   Route,
   Routes,
   Link,
-  useNavigate,
   useParams,
+  useNavigate,
 } from "react-router-dom";
 
 const Menu = () => {
@@ -27,26 +28,24 @@ const Menu = () => {
   );
 };
 
-const AnecdoteList = ({ anecdotes }) => {
-  console.log(anecdotes);
-  return (
-    <div>
-      <h2>Anecdotes</h2>
-      <ul>
-        {anecdotes.map((anecdote) => (
-          <li key={anecdote.id}>
-            <Link to={`/anecdotes/${anecdote.id}`}>{anecdote.content}</Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
+const AnecdoteList = ({ anecdotes }) => (
+  <div>
+    <h2>Anecdotes</h2>
+    <ul>
+      {anecdotes.map((anecdote) => (
+        <li key={anecdote.id}>
+          <Link to={`/anecdotes/${anecdote.id}`}>{anecdote.content}</Link>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
 
 const About = () => (
   <div>
     <h2>About anecdote app</h2>
     <p>According to Wikipedia:</p>
+
     <em>
       An anecdote is a brief, revealing account of an individual person or an
       incident. Occasionally humorous, anecdotes differ from jokes because their
@@ -56,6 +55,7 @@ const About = () => (
       about a person, place, or thing through the concrete details of a short
       narrative. An anecdote is "a story with a point."
     </em>
+
     <p>
       Software engineering is full of excellent anecdotes, at this app you can
       find the best and add more.
@@ -74,25 +74,42 @@ const Footer = () => (
   </div>
 );
 
-const CreateNew = (props) => {
-  const [content, setContent] = useState("");
-  const [author, setAuthor] = useState("");
-  const [info, setInfo] = useState("");
+const Notification = ({ message }) => {
+  if (!message) return null;
+  return (
+    <div
+      style={{ border: "solid", padding: 10, borderWidth: 1, marginBottom: 5 }}
+    >
+      {message}
+    </div>
+  );
+};
+
+const CreateNew = ({ addNew, setNotification }) => {
+  const content = useField("text");
+  const author = useField("text");
+  const info = useField("text");
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    props.addNew({
-      content,
-      author,
-      info,
+    addNew({
+      content: content.value,
+      author: author.value,
+      info: info.value,
       votes: 0,
     });
-    props.setNotification(`A new anecdote '${content}' was created!`);
-    setTimeout(() => {
-      props.setNotification("");
-    }, 5000);
     navigate("/");
+    setNotification(`a new anecdote '${content.value}' created!`);
+    setTimeout(() => {
+      setNotification("");
+    }, 5000);
+  };
+
+  const resetForm = () => {
+    content.reset();
+    author.reset();
+    info.reset();
   };
 
   return (
@@ -101,29 +118,20 @@ const CreateNew = (props) => {
       <form onSubmit={handleSubmit}>
         <div>
           content
-          <input
-            name="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
+          <input {...content} />
         </div>
         <div>
           author
-          <input
-            name="author"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-          />
+          <input {...author} />
         </div>
         <div>
           url for more info
-          <input
-            name="info"
-            value={info}
-            onChange={(e) => setInfo(e.target.value)}
-          />
+          <input {...info} />
         </div>
         <button>create</button>
+        <button type="button" onClick={resetForm}>
+          reset
+        </button>
       </form>
     </div>
   );
@@ -149,18 +157,6 @@ const Anecdote = ({ anecdotes }) => {
   );
 };
 
-const Notification = ({ message }) => {
-  if (!message) return null;
-
-  return (
-    <div
-      style={{ border: "solid", padding: 10, borderWidth: 1, marginBottom: 5 }}
-    >
-      {message}
-    </div>
-  );
-};
-
 const App = () => {
   const [anecdotes, setAnecdotes] = useState([
     {
@@ -178,6 +174,7 @@ const App = () => {
       id: 2,
     },
   ]);
+
   const [notification, setNotification] = useState("");
 
   const addNew = (anecdote) => {
@@ -185,7 +182,7 @@ const App = () => {
     setAnecdotes(anecdotes.concat(anecdote));
   };
 
-  // const anecdoteById = (id) => anecdotes.find((a) => a.id === id);
+  const anecdoteById = (id) => anecdotes.find((a) => a.id === id);
 
   const vote = (id) => {
     const anecdote = anecdoteById(id);
