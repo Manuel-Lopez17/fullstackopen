@@ -41,3 +41,7 @@ add to package.json: {
   },
   // ...
 }
+#### Part7 - blog-list-backend
+
+run server -> npx nodemon server.js
+
