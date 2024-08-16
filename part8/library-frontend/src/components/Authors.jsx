@@ -14,13 +14,16 @@ const Authors = (props) => {
     event.preventDefault();
 
     editAuthor({ variables: { name, born: parseInt(born) } });
-
     setName('');
     setBorn('');
   };
 
   if (!props.show) {
     return null;
+  }
+
+  if(!props.authors){
+    return <div>No authors</div>
   }
 
   const authors = props.authors;
@@ -36,10 +39,9 @@ const Authors = (props) => {
             <th>books</th>
           </tr>
           {authors.map((a) => (
-            <tr key={a.name}>
+            <tr key={a.id}>
               <td>{a.name}</td>
               <td>{a.born}</td>
-              <td>{a.bookCount}</td>
             </tr>
           ))}
         </tbody>
@@ -52,7 +54,7 @@ const Authors = (props) => {
           <select value={name} onChange={({ target }) => setName(target.value)}>
             <option value="">Select author</option>
             {authors.map((a) => (
-              <option key={a.name} value={a.name}>
+              <option key={a.id} value={a.name}>
                 {a.name}
               </option>
             ))}

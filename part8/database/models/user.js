@@ -11,6 +11,11 @@ const userSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
+	password: {
+		type: String,
+		require: true,
+		minlength: 3
+	}
 });
 
 const User = mongoose.model('User', userSchema);

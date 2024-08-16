@@ -25,6 +25,9 @@ const resolvers = {
 		me: (root, args, context) => {
 			return context.currentUser;
 		},
+		allUsers: async () => {
+			return User.find({})
+		}
 	},
 	Mutation: {
 		addBook: async (root, args, context) => {
@@ -84,27 +87,24 @@ const resolvers = {
 			}
 		},
 		createUser: async (root, args) => {
-			const passwordHash = await bcrypt.hash('supersecret', 10); // Static password for simplicity
 			const user = new User({ ...args });
-
 			try {
-				await user.save();
+				return await user.save();
 			} catch (error) {
-				throw new GraphQLError('Creating user failed', {
+				throw new GraphQLError('Creating the user failed', {
 					extensions: {
 						code: 'BAD_USER_INPUT',
 						invalidArgs: args,
-						error,
-					},
+						error
+					}
 				});
 			}
-
-			return user;
 		},
+
 		login: async (root, args) => {
 			const user = await User.findOne({ username: args.username });
 
-			if (!user || args.password !== 'supersecret') {
+			if (!user) {
 				throw new GraphQLError('Invalid credentials', {
 					extensions: { code: 'BAD_USER_INPUT' },
 				});
@@ -117,6 +117,7 @@ const resolvers = {
 
 			return { value: jwt.sign(userForToken, JWT_SECRET) };
 		},
+
 	},
 };
 

@@ -33,6 +33,7 @@ const Books = (props) => {
               <td>{book.title}</td>
               <td>{book.author}</td>
               <td>{book.published}</td>
+              <td>{book.genres}</td>
             </tr>
           ))}
         </tbody>
