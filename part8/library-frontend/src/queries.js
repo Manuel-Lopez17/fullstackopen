@@ -29,6 +29,18 @@ export const ADD_BOOK = gql`
 	}
 `;
 
+export const BOOKS_BY_FAVORITE_GENRE = gql`
+  query {
+    booksByFavoriteGenre {
+      title
+      author {
+        name
+      }
+      published
+    }
+  }
+`;
+
 //AUTHOR
 export const ALL_AUTHORS = gql`
   query {

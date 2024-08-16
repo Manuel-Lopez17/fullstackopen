@@ -7,13 +7,18 @@ const Authors = (props) => {
   const [born, setBorn] = useState('');
 
   const [editAuthor] = useMutation(EDIT_AUTHOR, {
-    refetchQueries: [{ query: ALL_AUTHORS }],
+    refetchQueries: [{ query: ALL_AUTHORS }], 
+    context: {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('user-token')}`,
+      },
+    },
   });
 
   const submit = async (event) => {
     event.preventDefault();
 
-    editAuthor({ variables: { name, born: parseInt(born) } });
+    editAuthor({ variables: { name:name, born: parseInt(born) } });
     setName('');
     setBorn('');
   };
@@ -41,7 +46,7 @@ const Authors = (props) => {
           {authors.map((a) => (
             <tr key={a.id}>
               <td>{a.name}</td>
-              <td>{a.born}</td>
+              <td>{a.born || "-"}</td>
             </tr>
           ))}
         </tbody>

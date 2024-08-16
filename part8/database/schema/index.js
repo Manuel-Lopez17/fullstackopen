@@ -31,6 +31,7 @@ const typeDefs = gql`
     allBooks: [Book!]!
     allAuthors: [Author!]!
     allUsers : [User!]!
+    booksByFavoriteGenre: [Book!]!
   }
 
   type Mutation {

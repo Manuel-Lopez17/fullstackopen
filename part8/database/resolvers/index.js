@@ -1,3 +1,4 @@
+const { GraphQLError } = require('graphql');
 const Author = require('../models/author');
 const Book = require('../models/book');
 const User = require('../models/user');
@@ -27,7 +28,17 @@ const resolvers = {
 		},
 		allUsers: async () => {
 			return User.find({})
-		}
+		},
+		booksByFavoriteGenre: async (root, args, context) => {
+			if (!context.currentUser) {
+				throw new GraphQLError('Authentication required', {
+					extensions: { code: 'UNAUTHENTICATED' },
+				});
+			}
+
+			const favoriteGenre = context.currentUser.favoriteGenre;
+			return Book.find({ genres: { $in: [favoriteGenre] } }).populate('author');
+		},
 	},
 	Mutation: {
 		addBook: async (root, args, context) => {
