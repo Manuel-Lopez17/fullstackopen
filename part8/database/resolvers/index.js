@@ -2,9 +2,18 @@ const { GraphQLError } = require('graphql');
 const Author = require('../models/author');
 const Book = require('../models/book');
 const User = require('../models/user');
+const DataLoader = require('dataloader');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { PubSub } = require('graphql-subscriptions');
+const pubsub = new PubSub();
+
 require('dotenv').config()
+
+const bookCountLoader = new DataLoader(async (authorIds) => {
+	const books = await Book.find({ author: { $in: authorIds } });
+	return authorIds.map(id => books.filter(book => book.author.toString() === id).length);
+});
 
 
 const JWT_SECRET = process.env.JWT_SECRET
@@ -49,7 +58,6 @@ const resolvers = {
 			}
 
 			try {
-				// Find or create the author
 				let author = await Author.findOne({ name: args.author });
 				if (!author) {
 					author = new Author({ name: args.author });
@@ -58,14 +66,14 @@ const resolvers = {
 
 				const book = new Book({ ...args, author: author._id });
 				await book.save();
-				return book.populate('author');
+
+				const populatedBook = await book.populate('author');
+				pubsub.publish('BOOK_ADDED', { bookAdded: populatedBook });
+
+				return populatedBook;
 			} catch (error) {
 				throw new GraphQLError('Error adding book', {
-					extensions: {
-						code: 'BAD_USER_INPUT',
-						invalidArgs: args,
-						error,
-					},
+					extensions: { code: 'BAD_USER_INPUT', invalidArgs: args, error },
 				});
 			}
 		},
@@ -130,6 +138,15 @@ const resolvers = {
 		},
 
 	},
+	Subscription: {
+		bookAdded: {
+			subscribe: () => pubsub.asyncIterator('BOOK_ADDED')
+		}
+	},
+	Author: {
+		bookCount: (root) => bookCountLoader.load(root.id),
+	},
+
 };
 
 module.exports = resolvers;

@@ -1,19 +1,26 @@
 import React,{useState, useEffect} from 'react';
-import { useQuery } from '@apollo/client';
-import { ALL_BOOKS } from '../queries';
+import { useQuery,useSubscription  } from '@apollo/client';
+import { ALL_BOOKS ,BOOK_ADDED} from '../queries';
+
 
 const Books = ({show}) => {
   const [selectedGenre, setSelectedGenre] = useState(null);
-  const { loading, error, data } = useQuery(ALL_BOOKS,{
-    variables: { genre }
-
-  });
+  // const { loading, error, data } = useQuery(ALL_BOOKS,{
+  //   variables: { genre }
+  // });
 
     useEffect(() => {
     if (genre) {
       refetch({ genre });
     }
   }, [genre, refetch]);
+
+    const { data, error } = useSubscription(BOOK_ADDED, {
+    onSubscriptionData: ({ subscriptionData }) => {
+      const book = subscriptionData.data.bookAdded;
+      window.alert(`New book added: ${book.title} by ${book.author.name}`);
+    },
+  });
 
   if (!show) {
     return null;

@@ -41,6 +41,19 @@ export const BOOKS_BY_FAVORITE_GENRE = gql`
   }
 `;
 
+
+export const BOOK_ADDED = gql`
+  subscription {
+    bookAdded {
+      title
+      author {
+        name
+      }
+    }
+  }
+`;
+
+
 //AUTHOR
 export const ALL_AUTHORS = gql`
   query {

@@ -6,7 +6,6 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 require('dotenv').config()
 
-
 const typeDefs = require('./schema/index');
 const resolvers = require('./resolvers/index');
 const User = require('./models/user');

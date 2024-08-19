@@ -1,19 +1,38 @@
 import { useState } from 'react';
-import { useQuery } from '@apollo/client';
+import {useQuery, useSubscription, useApolloClient } from '@apollo/client';
 import LoginForm from './components/LoginFrom';
 import CreateUserForm from './components/CreateUser';
 import Authors from './components/Authors';
 import Books from './components/Books';
 import NewBook from './components/NewBook';
 import FavoriteGenreBooks from './components/FavoriteGenresBook';
-import { ALL_AUTHORS, ALL_BOOKS } from './queries';
+import { ALL_AUTHORS, ALL_BOOKS, BOOK_ADDED } from './queries';
 
 const App = () => {
   const [page, setPage] = useState('authors');
   const authorsResult = useQuery(ALL_AUTHORS);
   const booksResult = useQuery(ALL_BOOKS);
   const [token, setToken] = useState(localStorage.getItem('user-token'));
+  
+    const client = useApolloClient();
 
+  const updateCacheWith = (newBook) => {
+    const dataInStore = client.readQuery({ query: ALL_BOOKS });
+    if (!dataInStore.allBooks.map(p => p.id).includes(newBook.id)) {
+      client.writeQuery({
+        query: ALL_BOOKS,
+        data: { allBooks: dataInStore.allBooks.concat(newBook) },
+      });
+    }
+  };
+
+  useSubscription(BOOK_ADDED, {
+    onSubscriptionData: ({ subscriptionData }) => {
+      const addedBook = subscriptionData.data.bookAdded;
+      window.alert(`New book added: ${addedBook.title} by ${addedBook.author.name}`);
+      updateCacheWith(addedBook);
+    },
+  });
 
   if (authorsResult.loading || booksResult.loading) {
     return <div>loading...</div>;
